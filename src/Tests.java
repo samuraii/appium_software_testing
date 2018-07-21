@@ -12,7 +12,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.net.URL;
 
-public class FirstTest{
+public class Tests {
 
     private AppiumDriver driver;
 
@@ -26,8 +26,8 @@ public class FirstTest{
         capabilities.setCapability("automationName", "Appium");
         capabilities.setCapability("appPackage", "org.wikipedia");
         capabilities.setCapability("appActivity", "main.MainActivity");
-        // capabilities.setCapability("app", "/Users/michail/dev/appium_software_testing/apks/org.wikipedia.apk"); // MAC OS
-        capabilities.setCapability("app", "C:\\dev\\appium_software_testing\\apks\\org.wikipedia.apk"); // Windows
+        capabilities.setCapability("app", "/Users/michail/dev/appium_software_testing/apks/org.wikipedia.apk"); // MAC OS
+        // capabilities.setCapability("app", "C:\\dev\\appium_software_testing\\apks\\org.wikipedia.apk"); // Windows
 
         driver = new AndroidDriver(new URL("http://127.0.0.1:4723/wd/hub"), capabilities);
     }
@@ -41,6 +41,15 @@ public class FirstTest{
         WebDriverWait wait = new WebDriverWait(driver, timeout_in_seconds);
         wait.withMessage(error_msg + "\n");
         return wait.until(ExpectedConditions.visibilityOfElementLocated(by));
+    }
+
+    private void checkTextInElement(WebElement webElement, String error_msg, String expected_text) {
+        String text_in_element = webElement.getAttribute("text");
+        Assert.assertEquals(
+                error_msg,
+                expected_text,
+                text_in_element
+        );
     }
 
     private WebElement waitForElementPresent(By by, String error_msg) {
@@ -142,13 +151,10 @@ public class FirstTest{
                 "title of the page is not visible",
                 10
         );
-
-        String article_title = page_title_element.getAttribute("text");
-
-        Assert.assertEquals(
+        checkTextInElement(
+                page_title_element,
                 "title is incorrect",
-                "Java (programming language)",
-                article_title
+                "Java (programming language)"
         );
     }
 }
