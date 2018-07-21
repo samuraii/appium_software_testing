@@ -179,8 +179,48 @@ public class Tests {
         List<WebElement> menu_items = driver.findElements(By.id("org.wikipedia:id/page_list_item_title"));
         for (WebElement element: menu_items) {
             String title_text = element.getAttribute("text");
-            assert title_text.toLowerCase().contains("Oracle".toLowerCase()) : "В результатх поиска содержится заголовок без слова \"Oracle\"";
+            assert title_text.toLowerCase().contains("Oracle".toLowerCase()) : "There are search results without word \"Oracle\" in title";
         }
+
+    }
+
+    @Test
+    public void testCancelSearchHomework() {
+        waitForElementAndClick(
+                By.id("org.wikipedia:id/search_container"),
+                "can't find element by id",
+                4
+        );
+        waitForElementAndSendKeys(
+                By.xpath("//*[contains(@text, 'Search…')]"),
+                "Some",
+                "input element not found",
+                4
+        );
+        waitForElementPresent(
+                By.id("org.wikipedia:id/page_list_item_container"),
+                "element not found"
+        );
+
+        List<WebElement> article_items = driver.findElements(By.id("org.wikipedia:id/page_list_item_container"));
+
+        assert article_items.size() > 0 : "There ara no search results found";
+
+        waitForElementAndClick(
+                By.id("org.wikipedia:id/search_close_btn"),
+                "can't find element by id",
+                5
+        );
+        waitForElementAndClick(
+                By.id("org.wikipedia:id/search_close_btn"),
+                "can't find element by id",
+                5
+        );
+        waitForElementNotPresent(
+                By.id("org.wikipedia:id/search_close_btn"),
+                "element is still visible",
+                10
+        );
 
     }
 
