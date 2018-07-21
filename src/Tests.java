@@ -1,4 +1,6 @@
 import io.appium.java_client.AppiumDriver;
+import io.appium.java_client.MobileElement;
+import io.appium.java_client.android.AndroidElement;
 import io.appium.java_client.android.AndroidDriver;
 import org.junit.After;
 import org.junit.Assert;
@@ -11,6 +13,8 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Tests {
 
@@ -157,4 +161,27 @@ public class Tests {
                 "Java (programming language)"
         );
     }
+
+    @Test
+    public void testWordsInSearchHomework() {
+        waitForElementAndClick(
+                By.id("org.wikipedia:id/search_container"),
+                "can't find element by id",
+                4
+        );
+        waitForElementAndSendKeys(
+                By.xpath("//*[contains(@text, 'Search…')]"),
+                "Oracle",
+                "input element not found",
+                4
+        );
+
+        List<WebElement> menu_items = driver.findElements(By.id("org.wikipedia:id/page_list_item_title"));
+        for (WebElement element: menu_items) {
+            String title_text = element.getAttribute("text");
+            assert title_text.toLowerCase().contains("Oracle".toLowerCase()) : "В результатх поиска содержится заголовок без слова \"Oracle\"";
+        }
+
+    }
+
 }
