@@ -1,7 +1,5 @@
 import io.appium.java_client.AppiumDriver;
-import io.appium.java_client.MobileElement;
 import io.appium.java_client.TouchAction;
-import io.appium.java_client.android.AndroidElement;
 import io.appium.java_client.android.AndroidDriver;
 import org.junit.After;
 import org.junit.Assert;
@@ -9,13 +7,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
+import org.openqa.selenium.ScreenOrientation;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 
 public class Tests {
@@ -32,8 +30,8 @@ public class Tests {
         capabilities.setCapability("automationName", "Appium");
         capabilities.setCapability("appPackage", "org.wikipedia");
         capabilities.setCapability("appActivity", "main.MainActivity");
-        // capabilities.setCapability("app", "/Users/michail/dev/appium_software_testing/apks/org.wikipedia.apk"); // MAC OS
-        capabilities.setCapability("app", "C:\\dev\\appium_software_testing\\apks\\org.wikipedia.apk"); // Windows
+        capabilities.setCapability("app", "/Users/michail/dev/appium_software_testing/apks/org.wikipedia.apk"); // MAC OS
+        // capabilities.setCapability("app", "C:\\dev\\appium_software_testing\\apks\\org.wikipedia.apk"); // Windows
 
         driver = new AndroidDriver(new URL("http://127.0.0.1:4723/wd/hub"), capabilities);
     }
@@ -86,6 +84,14 @@ public class Tests {
         return element;
     }
 
+    private void assertElementNotPresent(By by, String err_msg) {
+        int amount_of_elements = getAmountOfElements(by);
+        if (amount_of_elements > 0) {
+            String default_msg = "Element must not present " + by.toString();
+            throw new AssertionError(default_msg + ". " + err_msg);
+        }
+    }
+
     protected void swipeUp(int timeOfSwipe) {
         TouchAction action = new TouchAction(driver);
         Dimension size = driver.manage().window().getSize();
@@ -117,7 +123,11 @@ public class Tests {
             swipeUpQuick();
             ++already_swiped;
         }
+    }
 
+    protected int getAmountOfElements(By by) {
+        List elements = driver.findElements(by);
+        return elements.size();
     }
 
     protected void swipeToLeft(By by, String error_message) {
@@ -135,6 +145,11 @@ public class Tests {
                 .moveTo(left_x, miggle_y)
                 .release()
                 .perform();
+    }
+
+    protected String waitForElementAndGetAttribute(By by, String attribute, String err_msg, int timeout) {
+        WebElement element = waitForElementPresent(by, err_msg);
+        return element.getAttribute(attribute);
     }
 
     @Test
@@ -398,6 +413,172 @@ public class Tests {
                 "Cant delete saved article",
                 5
         );
+    }
+
+    @Test
+    public void testAmountOfNotEmptySearch() {
+        waitForElementAndClick(
+                By.id("org.wikipedia:id/search_container"),
+                "can't find element by id",
+                4
+        );
+
+        String search_line = "Linkin Park Discography";
+
+        waitForElementAndSendKeys(
+                By.xpath("//*[contains(@text, 'Search…')]"),
+                search_line,
+                "input element not found",
+                4
+        );
+
+        String search_result_locator = "//*[@resource-id='org.wikipedia:id/search_results_list']/*[@resource-id='org.wikipedia:id/page_list_item_container']";
+
+        waitForElementPresent(
+                By.xpath(search_result_locator),
+                "Cant find anythong with request " + search_line,
+                15
+        );
+
+        int amount_of_elements = getAmountOfElements(
+                By.xpath(search_result_locator)
+        );
+
+        Assert.assertTrue(
+                "Too few results found",
+                amount_of_elements > 0
+        );
+
+    }
+
+    @Test
+    public void testAmountOfEmptySearch() {
+        waitForElementAndClick(
+                By.id("org.wikipedia:id/search_container"),
+                "can't find element by id",
+                4
+        );
+
+        String search_line = "sdfsdfsd";
+
+        waitForElementAndSendKeys(
+                By.xpath("//*[contains(@text, 'Search…')]"),
+                search_line,
+                "input element not found",
+                4
+        );
+
+        String empty_search = "org.wikipedia:id/search_empty_text";
+
+        String search_result_locator = "//*[@resource-id='org.wikipedia:id/search_results_list']/*[@resource-id='org.wikipedia:id/page_list_item_container']";
+
+        waitForElementPresent(
+                By.id(empty_search),
+                "Not fount empty search label",
+                5
+        );
+
+        assertElementNotPresent(
+                By.xpath(search_result_locator),
+                "Search is not empty"
+        );
+
+
+    }
+
+    @Test
+    public void changeScreenOrientationOnSearchresults() {
+        waitForElementAndClick(
+                By.id("org.wikipedia:id/search_container"),
+                "can't find search input",
+                4
+        );
+
+        String search_request = "Java";
+
+        waitForElementAndSendKeys(
+                By.xpath("//*[contains(@text, 'Search…')]"),
+                search_request,
+                "input element not found",
+                4
+        );
+
+        waitForElementAndClick(
+                By.xpath("//*[@resource-id='org.wikipedia:id/page_list_item_container']//*[@text='Object-oriented programming language']"),
+                "can't find required article searching by " + search_request,
+                4
+        );
+
+        String title_before_rotation = waitForElementAndGetAttribute(
+                By.id("org.wikipedia:id/view_page_title_text"),
+                "text",
+                "title not found",
+                5
+        );
+
+        driver.rotate(ScreenOrientation.LANDSCAPE);
+
+        String title_after_rotation = waitForElementAndGetAttribute(
+            By.id("org.wikipedia:id/view_page_title_text"),
+                    "text",
+                    "title not found",
+                    5
+        );
+
+        Assert.assertEquals(
+                "Article title have been changed after rotations",
+                title_after_rotation,
+                title_before_rotation
+        );
+
+        driver.rotate(ScreenOrientation.PORTRAIT);
+
+        String title_after_second_rotation = waitForElementAndGetAttribute(
+                By.id("org.wikipedia:id/view_page_title_text"),
+                "text",
+                "title not found",
+                5
+        );
+
+        Assert.assertEquals(
+                "Article title have been changed after rotations",
+                title_after_rotation,
+                title_after_second_rotation
+        );
+
+    }
+
+    @Test
+    public void testCheckSearchArticleInBackground() {
+        waitForElementAndClick(
+                By.id("org.wikipedia:id/search_container"),
+                "can't find search input",
+                4
+        );
+
+        String search_request = "Java";
+
+        waitForElementAndSendKeys(
+                By.xpath("//*[contains(@text, 'Search…')]"),
+                search_request,
+                "input element not found",
+                4
+        );
+
+        waitForElementPresent(
+                By.xpath("//*[@resource-id='org.wikipedia:id/page_list_item_container']//*[@text='Object-oriented programming language']"),
+                "can't find required article searching by " + search_request,
+                4
+        );
+
+        driver.runAppInBackground(2);
+
+        waitForElementPresent(
+                By.xpath("//*[@resource-id='org.wikipedia:id/page_list_item_container']//*[@text='Object-oriented programming language']"),
+                "can't find article after returning from background",
+                4
+        );
+
     }
 
 }
