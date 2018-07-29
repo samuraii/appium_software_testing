@@ -1,6 +1,7 @@
 import io.appium.java_client.AppiumDriver;
 import io.appium.java_client.TouchAction;
 import io.appium.java_client.android.AndroidDriver;
+import io.appium.java_client.android.AndroidKeyCode;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -30,8 +31,10 @@ public class Tests {
         capabilities.setCapability("automationName", "Appium");
         capabilities.setCapability("appPackage", "org.wikipedia");
         capabilities.setCapability("appActivity", "main.MainActivity");
-        capabilities.setCapability("app", "/Users/michail/dev/appium_software_testing/apks/org.wikipedia.apk"); // MAC OS
-        // capabilities.setCapability("app", "C:\\dev\\appium_software_testing\\apks\\org.wikipedia.apk"); // Windows
+        capabilities.setCapability("unlockType", "pin");
+        capabilities.setCapability("unlockKey", "1111");
+        // capabilities.setCapability("app", "/Users/michail/dev/appium_software_testing/apks/org.wikipedia.apk"); // MAC OS
+        capabilities.setCapability("app", "C:\\dev\\appium_software_testing\\apks\\org.wikipedia.apk"); // Windows
 
         driver = new AndroidDriver(new URL("http://127.0.0.1:4723/wd/hub"), capabilities);
     }
@@ -148,7 +151,7 @@ public class Tests {
     }
 
     protected String waitForElementAndGetAttribute(By by, String attribute, String err_msg, int timeout) {
-        WebElement element = waitForElementPresent(by, err_msg);
+        WebElement element = waitForElementPresent(by, err_msg, timeout);
         return element.getAttribute(attribute);
     }
 
@@ -579,6 +582,176 @@ public class Tests {
                 4
         );
 
+    }
+
+    @Test
+    public void testSaveTwoArticlesHomework() {
+        //Написать тест, который:
+        //1. Сохраняет две статьи в одну папку
+        //2. Удаляет одну из статей
+        //3. Убеждается, что вторая осталась
+        //4. Переходит в неё и убеждается, что title совпадает
+
+        String list_name = "MyList";
+        String first_article = "Java (programming language)";
+        String second_article = "Island of Indonesia";
+        int timeout = 10;
+
+        waitForElementAndClick(
+                By.id("org.wikipedia:id/search_container"),
+                "can't find element by id",
+                timeout
+        );
+        waitForElementAndSendKeys(
+                By.xpath("//*[contains(@text, 'Search…')]"),
+                "Java",
+                "input element not found",
+                timeout
+        );
+        waitForElementAndClick(
+                By.xpath("//*[@resource-id='org.wikipedia:id/page_list_item_container']//*[@text='" + first_article + "']"),
+                "can't find element by id",
+                timeout
+        );
+        waitForElementPresent(
+                By.id("org.wikipedia:id/view_page_title_text"),
+                "title of the page is not visible",
+                timeout
+        );
+        waitForElementAndClick(
+                By.xpath("//android.widget.ImageView[@content-desc='More options']"),
+                "Cant find element 'More options'",
+                timeout
+        );
+        waitForElementAndClick(
+                By.xpath("//android.widget.TextView[@text='Add to reading list']"),
+                "Cant find element 'Add to reading list'",
+                timeout
+        );
+        waitForElementAndClick(
+                By.id("org.wikipedia:id/onboarding_button"),
+                "Cant find onboarding button",
+                timeout
+        );
+        waitForElementAndClear(
+                By.id("org.wikipedia:id/text_input"),
+                "No element to clear",
+                timeout
+        );
+        waitForElementAndSendKeys(
+                By.id("org.wikipedia:id/text_input"),
+                list_name,
+                "Cant find input for title",
+                timeout
+        );
+        waitForElementAndClick(
+                By.xpath("//*[@text='OK']"),
+                "Cant find button OK to click",
+                timeout
+        );
+        waitForElementAndClick(
+                By.xpath("//android.widget.ImageButton[@content-desc='Navigate up']"),
+                "Cant find button Navigate up",
+                timeout
+        );
+        waitForElementAndClick(
+                By.id("org.wikipedia:id/search_container"),
+                "can't find element by id",
+                timeout
+        );
+        waitForElementAndSendKeys(
+                By.xpath("//*[contains(@text, 'Search…')]"),
+                "Java",
+                "input element not found",
+                timeout
+        );
+        waitForElementAndClick(
+                By.xpath("//*[@resource-id='org.wikipedia:id/page_list_item_container']//*[@text='" + second_article + "']"),
+                "can't find element by id",
+                timeout
+        );
+        waitForElementPresent(
+                By.id("org.wikipedia:id/view_page_title_text"),
+                "title of the page is not visible",
+                timeout
+        );
+        waitForElementAndClick(
+                By.xpath("//android.widget.ImageView[@content-desc='More options']"),
+                "Cant find element 'More options'",
+                timeout
+        );
+        waitForElementAndClick(
+                By.xpath("//android.widget.TextView[@text='Add to reading list']"),
+                "Cant find element 'Add to reading list'",
+                10
+        );
+        waitForElementAndClick(
+                By.xpath("//*[@text='" + list_name + "']"),
+                "Cant find list with name " + list_name,
+                timeout
+        );
+        waitForElementAndClick(
+                By.xpath("//android.widget.ImageButton[@content-desc='Navigate up']"),
+                "Cant find button Navigate up",
+                timeout
+        );
+        waitForElementAndClick(
+                By.xpath("//android.widget.FrameLayout[@content-desc='My lists']"),
+                "Cant find button My lists",
+                timeout
+        );
+        waitForElementAndClick(
+                By.xpath("//*[@text='" + list_name + "']"),
+                "Cant find articles list with name " + list_name,
+                timeout
+        );
+
+        // Проверяю наличие статей на странице
+        waitForElementPresent(
+                By.xpath("//*[@resource-id='org.wikipedia:id/page_list_item_title' and @text='" + first_article +"']"),
+                "can't find first article on the list",
+                timeout
+        );
+        waitForElementPresent(
+                By.xpath("//*[@resource-id='org.wikipedia:id/page_list_item_title' and @text='Java']"),
+                "can't find second article on the list",
+                timeout
+        );
+
+        // Удаляю первую статью и проверяю отсуствие
+        swipeToLeft(
+                By.xpath("//*[@resource-id='org.wikipedia:id/page_list_item_title' and @text='" + first_article + "']"),
+                "Cant find article with text " + first_article
+        );
+        waitForElementNotPresent(
+                By.xpath("//*[@resource-id='org.wikipedia:id/page_list_item_title' and @text='" + first_article + "']"),
+                "Cant find article with text " + first_article,
+                timeout
+        );
+
+        //Перехожу по оставшейся статье и проверяю заголовок
+        String link_article_title = waitForElementAndGetAttribute(
+                By.xpath("//*[@resource-id='org.wikipedia:id/page_list_item_title' and @text='Java']"),
+                "text",
+                "cant find article to get its text attribute",
+                timeout
+        );
+        waitForElementAndClick(
+                By.xpath("//*[@resource-id='org.wikipedia:id/page_list_item_title' and @text='Java']"),
+                "can't find second article on the list",
+                timeout
+        );
+        String article_title = waitForElementAndGetAttribute(
+                By.xpath("//*[@resource-id='org.wikipedia:id/view_page_title_text']"),
+                "text",
+                "cant find article to get its text attribute",
+                timeout
+        );
+        Assert.assertEquals(
+                "Article title does not match title of the link on the list",
+                link_article_title,
+                article_title
+        );
     }
 
 }
