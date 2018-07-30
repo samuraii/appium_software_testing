@@ -155,6 +155,14 @@ public class Tests {
         return element.getAttribute(attribute);
     }
 
+    private void assertElementPresent(By by) {
+        try {
+            WebElement element = driver.findElement(by);
+        } catch (org.openqa.selenium.NoSuchElementException exception) {
+            throw new AssertionError("Element " + by.toString() + " not fount on the page");
+        }
+    }
+
     @Test
     public void checkCorrectApp() {
         waitForElementAndClick(
@@ -751,6 +759,35 @@ public class Tests {
                 "Article title does not match title of the link on the list",
                 link_article_title,
                 article_title
+        );
+    }
+
+    @Test
+    public void checkArticleTitlePresentHomework() {
+        // Написать тест, который открывает статью и убеждается, что у нее есть элемент title.
+        // Важно: тест не должен дожидаться появления title, проверка должна производиться сразу.
+        // Если title не найден - тест падает с ошибкой. Метод можно назвать assertElementPresent.
+
+        String article_name = "Java (programming language)";
+
+        waitForElementAndClick(
+                By.id("org.wikipedia:id/search_container"),
+                "can't find element by id",
+                10
+        );
+        waitForElementAndSendKeys(
+                By.xpath("//*[contains(@text, 'Search…')]"),
+                "Java",
+                "input element not found",
+                10
+        );
+        waitForElementAndClick(
+                By.xpath("//*[@resource-id='org.wikipedia:id/page_list_item_container']//*[@text='" + article_name + "']"),
+                "can't find element by id",
+                10
+        );
+        assertElementPresent(
+                By.xpath("//*[@resource-id='org.wikipedia:id/view_page_title_text']")
         );
     }
 
