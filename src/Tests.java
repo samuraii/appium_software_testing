@@ -24,7 +24,6 @@ public class Tests {
     @Before
     public void setUp() throws Exception {
         DesiredCapabilities capabilities = new DesiredCapabilities();
-
         capabilities.setCapability("platformName", "Android");
         capabilities.setCapability("deviceName", "AndroidTestDevice");
         capabilities.setCapability("platformVersion", "6.0");
@@ -35,8 +34,11 @@ public class Tests {
         capabilities.setCapability("unlockKey", "1111");
         // capabilities.setCapability("app", "/Users/michail/dev/appium_software_testing/apks/org.wikipedia.apk"); // MAC OS
         capabilities.setCapability("app", "C:\\dev\\appium_software_testing\\apks\\org.wikipedia.apk"); // Windows
-
         driver = new AndroidDriver(new URL("http://127.0.0.1:4723/wd/hub"), capabilities);
+        // Хук на поворот экрана
+        if (driver.getOrientation().toString().equals("LANDSCAPE")) {
+            driver.rotate(ScreenOrientation.PORTRAIT);
+        }
     }
 
     @After
@@ -790,5 +792,4 @@ public class Tests {
                 By.xpath("//*[@resource-id='org.wikipedia:id/view_page_title_text']")
         );
     }
-
 }
