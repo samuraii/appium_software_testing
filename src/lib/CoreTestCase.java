@@ -26,12 +26,12 @@ public class CoreTestCase extends TestCase {
         capabilities.setCapability("appActivity", "main.MainActivity");
         capabilities.setCapability("unlockType", "pin");
         capabilities.setCapability("unlockKey", "1111");
-        // capabilities.setCapability("app", "/Users/michail/dev/appium_software_testing/apks/org.wikipedia.apk"); // MAC OS
-        capabilities.setCapability("app", "C:\\dev\\appium_software_testing\\apks\\org.wikipedia.apk"); // Windows
+        capabilities.setCapability("app", "/Users/michail/dev/appium_software_testing/apks/org.wikipedia.apk"); // MAC OS
+        // capabilities.setCapability("app", "C:\\dev\\appium_software_testing\\apks\\org.wikipedia.apk"); // Windows
         driver = new AndroidDriver(new URL(AppiumURL), capabilities);
         // Хук на поворот экрана
         if (driver.getOrientation().toString().equals("LANDSCAPE")) {
-            driver.rotate(ScreenOrientation.PORTRAIT);
+            rotateScreenPortrait();
         }
     }
 
@@ -39,6 +39,18 @@ public class CoreTestCase extends TestCase {
     protected void tearDown() throws Exception {
         driver.quit();
         super.tearDown();
+    }
+
+    protected void rotateScreenPortrait() {
+        driver.rotate(ScreenOrientation.PORTRAIT);
+    }
+
+    protected void rotateScreenLandscape() {
+        driver.rotate(ScreenOrientation.LANDSCAPE);
+    }
+
+    protected void backgroudApp(int sec) {
+        driver.runAppInBackground(sec);
     }
 
 }

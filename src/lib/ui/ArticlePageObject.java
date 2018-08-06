@@ -13,7 +13,8 @@ public class ArticlePageObject extends MainPageObject {
             OPTIONS_ADD_TO_READING_LIST = "//*[@text='Add to reading list']",
             ADD_TO_MY_LIST_ONBOARDING = "org.wikipedia:id/onboarding_button",
             MY_LIST_NAME_INPUT = "org.wikipedia:id/text_input",
-            MY_LIST_OK_BUTTON = "//*[@text='OK']";
+            MY_LIST_OK_BUTTON = "//*[@text='OK']",
+            CLOSE_ARTICLE_BUTTON = "//android.widget.ImageButton[@content-desc='Navigate up']";
 
 
     public ArticlePageObject(AppiumDriver driver) {
@@ -74,6 +75,18 @@ public class ArticlePageObject extends MainPageObject {
                 "Cant find button OK to click",
                 5
         );
+    }
+
+    public void closeArticle() {
+        this.waitForElementAndClick(
+                By.xpath(CLOSE_ARTICLE_BUTTON),
+                "Cant find button Navigate up",
+                5
+        );
+    }
+
+    public void assertArticleTitle() {
+        this.assertElementPresent(By.xpath(ARTICLE_TITLE));
     }
 
 }
