@@ -1,7 +1,15 @@
 package tests;
 
 import lib.CoreTestCase;
-import lib.ui.*;
+import lib.Platform;
+import lib.ui.ArticlePageObject;
+import lib.ui.MyListsPageObject;
+import lib.ui.NavigationUI;
+import lib.ui.SearchPageObject;
+import lib.ui.factories.ArticlePageObjectFactory;
+import lib.ui.factories.MyListsPageObjectFactory;
+import lib.ui.factories.NavigationUIFactory;
+import lib.ui.factories.SearchPageObjectFactory;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -10,16 +18,9 @@ import java.util.List;
 
 public class HomeworkTests extends CoreTestCase {
 
-//    private lib.ui.MainPageObject MainPageObject;
-//
-//    protected void setUp() throws Exception {
-//        super.setUp();
-//        MainPageObject = new MainPageObject(driver);
-//    }
-
     @Test
     public void testWordsInSearchHomework() {
-        SearchPageObject searchPageObject = new SearchPageObject(driver);
+        SearchPageObject searchPageObject = SearchPageObjectFactory.get(driver);
 
         searchPageObject.initSearchInput();
         searchPageObject.typeSearchLIne("Oracle");
@@ -34,7 +35,7 @@ public class HomeworkTests extends CoreTestCase {
 
     @Test
     public void testCancelSearchHomework() {
-        SearchPageObject searchPageObject = new SearchPageObject(driver);
+        SearchPageObject searchPageObject = SearchPageObjectFactory.get(driver);
 
         searchPageObject.initSearchInput();
         searchPageObject.typeSearchLIne("Some");
@@ -60,34 +61,42 @@ public class HomeworkTests extends CoreTestCase {
 
         String list_name = "MyList";
         String first_article = "Java (programming language)";
-        String second_article = "Island of Indonesia";
+        String second_article = "Java (software platform)";
 
-        SearchPageObject searchPageObject = new SearchPageObject(driver);
-        ArticlePageObject articlePageObject = new ArticlePageObject(driver);
-        NavigationUI navigationUI = new NavigationUI(driver);
-        MyListPageObject myListPageObject = new MyListPageObject(driver);
+        SearchPageObject searchPageObject = SearchPageObjectFactory.get(driver);
+        ArticlePageObject articlePageObject = ArticlePageObjectFactory.get(driver);
+        NavigationUI navigationUI = NavigationUIFactory.get(driver);
+        MyListsPageObject myListsPageObject = MyListsPageObjectFactory.get(driver);
 
         searchPageObject.initSearchInput();
         searchPageObject.typeSearchLIne("Java");
         searchPageObject.clickByArticleWithSubstring(first_article);
         articlePageObject.waitForTitleElement();
-        articlePageObject.addArticleToMyList(list_name);
-        articlePageObject.closeArticle();
+        if (Platform.getInstance().isAndroid()) {
+            articlePageObject.addArticleToMyList(list_name, true);
+            articlePageObject.closeArticle();
+        }
+
 
         searchPageObject.initSearchInput();
         searchPageObject.typeSearchLIne("Java");
         searchPageObject.clickByArticleWithSubstring(second_article);
         articlePageObject.waitForTitleElement();
+        articlePageObject.addArticleToMyList(list_name, false);
         articlePageObject.closeArticle();
 
         navigationUI.ClickMyLists();
-        myListPageObject.OpenFolderByName(list_name);
-        myListPageObject.swipeAtricleToDelete(first_article);
-        myListPageObject.waitForArticleToDisappear(first_article);
-        myListPageObject.waitForArticleToAppear(second_article);
+        myListsPageObject.openFolderByName(list_name);
+        myListsPageObject.swipeByArticleToDelete(first_article);
+        if (Platform.getInstance().isIOs()) {
+            myListsPageObject.waitForArticleToDisappearByTitleForIOS();
+        } else {
+            myListsPageObject.waitForArticleToDisappearByTitle(second_article);
 
-        //Перехожу по оставшейся статье и проверяю заголовок
-        String title_from_list = myListPageObject.clickArticleWithTitle(second_article);
+        }
+
+        String title_from_list = myListsPageObject.getSecondArticleTitle();
+        myListsPageObject.openFirstArticle();
         String article_title = articlePageObject.getArticleTitle();
         assertEquals(
                 "Article title does not match title of the link on the list",
@@ -103,11 +112,10 @@ public class HomeworkTests extends CoreTestCase {
         // Если title не найден - тест падает с ошибкой. Метод можно назвать assertElementPresent.
 
         String article_name = "Java (programming language)";
-        SearchPageObject searchPageObject = new SearchPageObject(driver);
-        ArticlePageObject articlePageObject = new ArticlePageObject(driver);
+        SearchPageObject searchPageObject = SearchPageObjectFactory.get(driver);
+        ArticlePageObject articlePageObject = ArticlePageObjectFactory.get(driver);
 
         searchPageObject.initSearchInput();
-        searchPageObject.typeSearchLIne("Java");
         searchPageObject.typeSearchLIne("Java");
         searchPageObject.clickByArticleWithSubstring(article_name);
         articlePageObject.assertArticleTitle();
